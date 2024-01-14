@@ -1,0 +1,134 @@
+C51 COMPILER V9.54   MAIN                                                                  01/14/2024 20:29:45 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\KEIL5\keil5.1\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\L
+                    -istings\main.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /*
+   2          ********************************************头文件声明区********************************************
+   3          */
+   4          #include <STC15F2K60S2.H>
+   5          #include <intrins.h>
+   6          #define u8      unsigned char
+   7          #define u16     unsigned int
+   8          /*
+   9          ********************************************变量定义区********************************************
+  10          */
+  11          u8 led_water = 0xfe;    //LED流水变量
+  12          u8 led[9]={0xff,0xfe,0xfd,0xfb,0xf7,0xef,0xdf,0xbf,0x7f};       //LED点亮数组
+  13          u8 key_valu,key_down,key_up,key_old;    //按键扫描变量
+  14          bit key_flag;   //按键控制变量
+  15          
+  16          /*
+  17          ********************************************自定义函数区********************************************
+  18          */
+  19          void Delay(u16 x)               //@12.000MHz
+  20          {
+  21   1              unsigned char data i, j;
+  22   1              while(x--)
+  23   1              {       
+  24   2                      i = 2;
+  25   2                      j = 239;
+  26   2                      do
+  27   2                      {
+  28   3                              while (--j);
+  29   3                      } while (--i);
+  30   2              }
+  31   1      }
+  32          
+  33          void HC138(u8 x)//通道选通
+  34          {
+  35   1              switch (x)
+  36   1              {
+  37   2                      case 4:
+  38   2                              //1000 0000
+  39   2                              P2 = ((P2 & 0x1f) | 0x80);
+  40   2                      break;
+  41   2                      case 5:
+  42   2                              //1010 0000
+  43   2                              P2 = ((P2 & 0x1f) | 0xa0);
+  44   2                      break;
+  45   2                      case 6:
+  46   2                              //1100 0000
+  47   2                              P2 = ((P2 & 0x1f) | 0xc0);
+  48   2                      break;
+  49   2                      case 7:
+  50   2                              //1110 0000
+  51   2                              P2 = ((P2 & 0x1f) | 0xe0);
+  52   2                      break;
+  53   2              }
+  54   1      }
+C51 COMPILER V9.54   MAIN                                                                  01/14/2024 20:29:45 PAGE 2   
+
+  55          u8 Key_read()
+  56          {
+  57   1              u8 temp = 0;
+  58   1              if(P30 == 0) temp = 1;
+  59   1              if(P31 == 0) temp = 2;
+  60   1              if(P32 == 0) temp = 3;
+  61   1              if(P33 == 0) temp = 4;
+  62   1              return temp;
+  63   1      }
+  64          void Led_ON(u8 x)
+  65          {
+  66   1              HC138(4);
+  67   1              P0 = led[x];
+  68   1      }
+  69          
+  70          /*
+  71          ********************************************主函数区********************************************
+  72          */
+  73          int main()
+  74          {
+  75   1              //主循环
+  76   1              while(1)
+  77   1              {
+  78   2                      key_valu = Key_read();  //读取键码值
+  79   2                      key_down = key_valu & (key_valu ^ key_old);     //检测下降沿
+  80   2                      key_up = ~key_valu & (key_valu ^ key_old);      //检测上升沿
+  81   2                      key_old = key_valu;             //扫描辅助变量
+  82   2                      
+  83   2                      switch(key_down)
+  84   2                      {
+  85   3                              case 1:
+  86   3                                      Led_ON(1);
+  87   3                              break;
+  88   3                              case 2:
+  89   3                                      Led_ON(2);
+  90   3                              break;
+  91   3                              case 3:
+  92   3                                      key_flag = 1;
+  93   3                              break;
+  94   3                              case 4:
+  95   3                                      key_flag = 0;
+  96   3                              break;
+  97   3                      }
+  98   2                      if(key_flag == 1)
+  99   2                      {
+ 100   3                              HC138(4);
+ 101   3                              P0 = led_water;
+ 102   3                              Delay(500);
+ 103   3                              led_water = _crol_(led_water,1);
+ 104   3                      }
+ 105   2              }
+ 106   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    219    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     14    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+C51 COMPILER V9.54   MAIN                                                                  01/14/2024 20:29:45 PAGE 3   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
